@@ -1,4 +1,6 @@
+library(dplyr)
 source("cleanfeaturenames.R")
+source("get_averages.R")
 
 #Load Datasets
 #loaddata()
@@ -14,7 +16,7 @@ labelstest <- read.table("UCI HAR Dataset/test/Y_test.txt")
 #Load Feature names
 featurenames <- read.table("UCI HAR Dataset/features.txt")
 
-
+#Step 1: Merge data sets
 #Merge Data
 subjects <- rbind(subjtrain,subjtest)
 features <- rbind(featurestrain,featurestest)
@@ -24,19 +26,27 @@ labels <- rbind(labelstrain,labelstest)
 names(features) <- featurenames[[2]]
 names(subjects) <- c("subject")
 names(labels) <- c("activity")
-#Clean column names
-#INSERT REGEX EXPRESSIONS TO CORRECTLY FORMAT FEATURE NAMES
 
-#Extract mean and std from each measurement
-meancolumns <- grep("-mean()",featurenames[[2]],value=FALSE,fixed = TRUE) #filtrar los meanFreq()
+#Step 2: Extract mean and std from each measurement
+meancolumns <- grep("-mean()",featurenames[[2]],value=FALSE,fixed = TRUE)
 stdcolumns <- grep("-std()",featurenames[[2]],value=FALSE)
 #Join mean and std columns into a vector
 columns <- c(meancolumns,stdcolumns)
 columns <- sort.int(columns)
+
+#Step3: Use descritpive activity names
+activitynames <- read.table("UCI HAR Dataset/activity_labels.txt")
+names(activitynames) <- c("activity","activityname")
+activities <- left_join(labels,activitynames,by = "activity")
+activity <- activities$activityname
+names(activity) <- "activity"
+
+#Step 4: Clean data set with descriptive variable names
 #Get values and feature names
 values <- features[columns]
 names(values) <- cleanfeaturenames(featurenames[[2]][columns])
-#Add subject and activity columns
-values <- cbind(values,labels,subjects)
-#Save data to a csv file
-write.csv(values,"clean_data.csv")
+#Add subject, activity and activity name columns
+values <- cbind(values,activity,subjects)
+
+#Step 5: Create data set with averages for each parameter grouped by subject and activity
+averages <- getaverages(values)
