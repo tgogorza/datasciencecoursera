@@ -1,0 +1,17 @@
+{
+    "contents" : "plot1 <- function(){\n  source(\"LoadData.R\")\n  data <- LoadData()\n  \n  plot <- hist(data$Global_active_power,col = \"red\", xlab = \"Global Active Power (kilowatts)\", main = \"Global Active Power\")\n  dev.copy(png,'plot1.png')\n  dev.off()\n}",
+    "created" : 1437257444889.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2073243195",
+    "id" : "96406953",
+    "lastKnownWriteTime" : 1437257980,
+    "path" : "D:/Cursos/Data Science/datasciencecoursera/Exploratory Data Analysis/Project1/Plot1.R",
+    "project_path" : "Plot1.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

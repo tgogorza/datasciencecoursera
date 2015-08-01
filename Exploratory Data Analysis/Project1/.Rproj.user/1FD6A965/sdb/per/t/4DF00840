@@ -1,0 +1,17 @@
+{
+    "contents" : "plot4 <- function(){\n  source(\"LoadData.R\")\n\n  #Get data\n  data <- LoadData()\n  #Add week days column to data set \n  data <- mutate(data,wday = wday(dmy(Date), label=TRUE)) \n  \n  par(mfrow = c(2,2))\n  par(cex.lab = 0.75)\n  par(cex.axis = 0.75)\n  \n  #Plot1\n  plot(x= 1:nrow(data), y=data$Global_active_power,type=\"n\", xaxt=\"n\", xlab=\"\", ylab=\"Global Active Power\")\n  lines(x= 1:nrow(data), y=data$Global_active_power)\n  axis(1, at = c(1,nrow(data)/2,nrow(data)), labels = c(\"Thu\",\"Fri\",\"Sat\"))\n  \n  #Plot2\n  plot(x= 1:nrow(data), y=data$Voltage, xaxt=\"n\", xlab=\"datetime\", ylab=\"Voltage\", type = \"l\")\n  axis(1, at = c(1,nrow(data)/2,nrow(data)), labels = c(\"Thu\",\"Fri\",\"Sat\"))\n  \n  #Plot3\n  plot(x= 1:nrow(data), y=data$Sub_metering_1, type=\"n\", xaxt=\"n\", xlab=\"\", ylab=\"Energy sub metering\")\n  lines(x= 1:nrow(data), y=data$Sub_metering_1, type=\"l\")\n  lines(x= 1:nrow(data), y=data$Sub_metering_2, type=\"l\", col = \"red\")\n  lines(x= 1:nrow(data), y=data$Sub_metering_3, type=\"l\", col = \"blue\")\n  axis(1, at = c(1,nrow(data)/2,nrow(data)), labels = c(\"Thu\",\"Fri\",\"Sat\"))\n  legend(\"topright\", lwd=1, col = c(\"black\", \"blue\", \"red\"), legend = c(names(data[7]),names(data[8]),names(data[9])), bty=\"n\", cex = 0.7)\n  \n  #Plot4\n  plot(x= 1:nrow(data), y=data$Global_reactive_power, xaxt=\"n\", xlab=\"datetime\", ylab=\"Global_reactive_power\", type = \"l\")\n  axis(1, at = c(1,nrow(data)/2,nrow(data)), labels = c(\"Thu\",\"Fri\",\"Sat\"))\n  \n  dev.copy(png,'plot4.png')\n  dev.off()\n}",
+    "created" : 1438124401988.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2378119604",
+    "id" : "4DF00840",
+    "lastKnownWriteTime" : 1438219378,
+    "path" : "D:/Cursos/Data Science/datasciencecoursera/Exploratory Data Analysis/Project1/Plot4.R",
+    "project_path" : "Plot4.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : true,
+    "type" : "r_source"
+}
