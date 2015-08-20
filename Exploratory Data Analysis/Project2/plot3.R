@@ -15,5 +15,6 @@ perYear <- group_by(NEI,year)
 baltimoreData <- filter(perYear,fips == "24510")
 
 #Plot 3
+png("plot3.png",width = 640, height = 480)
 qplot(year, Emissions, data=baltimoreData, facets = .~type) + stat_summary(fun.y = sum, geom = "bar") + labs(title = "Emissions by type")
-ggsave("plot3.png")
+dev.off()

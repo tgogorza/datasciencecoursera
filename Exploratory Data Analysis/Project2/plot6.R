@@ -11,12 +11,13 @@ NEI <- mutate(NEI, year = factor(year))
 #Filter Baltimore and LA data
 filteredData <- filter(NEI,fips == "24510" | fips == "06037")
 
-#Plot 5
+#Plot 6
 motor <- grep("+vehicle+",SCC$EI.Sector,ignore.case=TRUE)
 motorcategories <- SCC$SCC[motor]
 #Filter NEI set by SCC coal categories
 motorNEI <- filter(filteredData, SCC %in% motorcategories)
 #Add city name
 motorNEI <- mutate(motorNEI, city = ifelse(fips == "24510", "Baltimore", "LA"))
+png("plot6.png",width = 480, height = 480)
 qplot(year,Emissions,data=motorNEI, facets = .~city) + stat_summary(fun.y = sum, geom="bar") + labs(title = "Motor Vehicle Emissions (Baltimore vs LA)")
-ggsave("plot6.png")
+dev.off()

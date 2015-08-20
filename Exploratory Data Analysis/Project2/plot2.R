@@ -15,6 +15,7 @@ baltimoreData <- filter(perYear,fips == "24510")
 emissionsPerYearBaltimore <- summarise(baltimoreData, sum = sum(Emissions))
 
 #Plot 2
-barplot(emissionsPerYearBaltimore$sum, main="Emissions per year (Baltimore)", names.arg = emissionsPerYearBaltimore$year)
+barplot(emissionsPerYearBaltimore$sum, main="Emissions per year (Baltimore)", names.arg = emissionsPerYearBaltimore$year,
+        xlab = "Year", ylab = "Emissions (tons)")
 dev.copy(png,'plot2.png')
 dev.off()

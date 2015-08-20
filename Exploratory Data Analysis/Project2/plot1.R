@@ -1,3 +1,5 @@
+library(dplyr)
+
 #Read data
 NEI <- readRDS("summarySCC_PM25.rds")
 SCC <- readRDS("Source_Classification_Code.rds")
@@ -10,6 +12,6 @@ perYear <- group_by(NEI,year)
 emissionsPerYear <- summarise(perYear, sum = sum(Emissions))
 
 #Plot 1
-barplot(emissionsPerYear$sum, main="Emissions per year", names.arg = emissionsPerYear$year)
+barplot(emissionsPerYear$sum, main="Emissions per year", names.arg = emissionsPerYear$year, xlab = "Year", ylab = "Emissions (tons)")
 dev.copy(png,'plot1.png')
 dev.off()

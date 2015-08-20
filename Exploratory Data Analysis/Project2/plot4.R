@@ -13,5 +13,7 @@ coal <- grep("^fuel comb -(.*)- coal$", SCC$EI.Sector, ignore.case=TRUE)
 coalcategories <- SCC$SCC[coal]
 #Filter NEI set by SCC coal categories
 coalNEI <- filter(NEI, SCC %in% coalcategories)
+
+png("plot4.png",width = 480, height = 480)
 qplot(year,Emissions,data=coalNEI) + stat_summary(fun.y = sum, geom="bar") + labs(title = "Coal Combustion Emissions")
-ggsave("plot4.png")
+dev.off()
