@@ -1,0 +1,100 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+## Loading and preprocessing the data
+
+Load packages
+```{r warning=FALSE, message=FALSE, error=FALSE}
+
+library(ggplot2)
+library(dplyr)
+
+```
+
+Load data and clean data set
+```{r}
+
+activity <- read.csv("activity.csv")
+#activity.withNA <- activity
+#activity <- filter(activity,!is.na(steps))
+
+```
+
+
+## What is mean total number of steps taken per day?
+
+1. Calculate the total number of steps taken per day:
+```{r}
+
+activity.bydate <- aggregate(FUN = sum, by = activity["date"], x=activity["steps"])
+activity.bydate
+
+
+```
+
+
+2. Make a histogram of the total number of steps taken each day
+```{r fig.width=12}
+
+ggplot(na.omit(activity), aes(date,steps)) +
+    geom_histogram(stat = "identity") +
+    theme(axis.text.x = element_text(angle = 90, vjust=0.5))
+
+```
+
+3. Calculate and report the mean and median of the total number of steps taken per day
+```{r}
+
+stepstats <- summary(activity.bydate$steps)
+stepstats
+
+```
+
+The **mean** total number of steps taken per day is **`r as.integer(stepstats['Mean'])`** steps/day and the **median** is **`r as.integer(stepstats['Median'])`** steps/day
+
+
+## What is the average daily activity pattern?
+
+Average data by daily time interval
+```{r}
+
+activity.byinterval <- aggregate(FUN = mean, by = activity["interval"], x=activity["steps"], na.rm=TRUE)
+
+```
+
+1. Make time series plot (avg steps taken per interval, across all days)
+```{r}
+
+ggplot(na.omit(activity.byinterval), aes(interval,steps)) + 
+  geom_line() + 
+  scale_x_continuous(breaks = seq(min(activity.byinterval$interval), 
+                                  max(activity.byinterval$interval), by = 200))
+
+```
+
+2. Get the interval with max average steps
+```{r}
+
+maxsteps <- summary(activity.byinterval$steps)["Max."]
+maxinterval <- filter(activity.byinterval, as.integer(steps)==as.integer(maxsteps))
+
+```
+
+The time interval averaging the maximum number of steps is the **`r maxinterval$interval`** interval
+
+
+## Imputing missing values
+
+1. Calculate and report the total number of missing values in the dataset
+```{r}
+
+
+
+```
+
+## Are there differences in activity patterns between weekdays and weekends?

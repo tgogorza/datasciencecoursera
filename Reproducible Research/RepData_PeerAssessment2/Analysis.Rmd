@@ -5,12 +5,15 @@ date: "Wednesday, August 19, 2015"
 output: html_document
 ---
 
-In the last 60 year there's been a countless number of natural disasters which have affected the lives of American citizens in greater or lesser degree. This analysis will classify events by types and show which ones are the most dangerous. Natural disasters may affect the country in several ways, and it is honsidered herby that population health and economy are 2 of the most important factors to take into account when preparing for an event, so this analysis will take main focus on those 2 factors.
 
-#Data Source
+
+In the last 60 year there's been a countless number of natural disasters which have affected the lives of American citizens in greater or lesser degree. This analysis will classify events by types and show which ones are the most dangerous. Natural disasters may affect the country in several ways, and it is honsidered herby that population health and economy are 2 of the most important factors to take into account when preparing for an event, so this analysis will take main focus on those 2 factors. This analysis will use the sotrm database from the U.S. National Oceanic and Atmospheric Administration to summarize injuries, fatalities, property and crop damage and classify events by significance and impact on civilians and economy. 
+
+#Data Processing
 
 The information used on this report was obtained from U.S. National Oceanic and Atmospheric Administration's storm database
 
+Get the data and load it
 ```{r cache=TRUE}
 
 setInternet2(use = TRUE)
@@ -19,45 +22,155 @@ download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.
 #Load data
 storms <- read.table(bzfile("StormData.csv.bz2"), header = TRUE, sep = ",", na.strings = "", check.names = TRUE, blank.lines.skip = TRUE)  
 
-
 ```
 
-#Data Processing
-
-Libraries used
-```{r}
+Packages and options used
+```{r warning=FALSE, message=FALSE, error=FALSE}
 library(dplyr)
+library(reshape2)
+library(ggplot2)
+#Disable scientific notation
+options(scipen=999)
 ```
 
-Clean column names 
+Format column names 
 ```{r cache=TRUE}
 
-names(storms) <- make.names(names(storms), allow_ = FALSE)
-names(storms)[1] <- gsub(".","",names(storms)[1],fixed=TRUE)
+names(storms)[1] <- "STATE.ID"
+names(storms) <- tolower(make.names(names(storms), allow_ = FALSE))
 
 ```
 
 Format dates
 ```{r}
+
+storms$bgn.date <- as.Date(storms$bgn.date, format = "%m/%d/%Y")
+
 ```
 
-Calculate fatalities by event type
+Rename and merge event types
+```{r cache=TRUE}
+
+storms$evtype <- gsub(storms$evtype, pattern = ".*\\b(heat)\\b.*", 
+                      replacement = "HEAT", ignore.case = TRUE)
+storms$evtype <- gsub(storms$evtype, pattern = ".*\\b(thunderstorm|thunderstorms|tstm|lightning)\\b.*", 
+                      replacement = "THUNDERSTORMS", ignore.case = TRUE)
+storms$evtype <- gsub(storms$evtype, pattern = ".*\\b(snow|snowfall)\\b.*", 
+                      replacement = "SNOW", ignore.case = TRUE)
+storms$evtype <- gsub(storms$evtype, pattern = ".*\\b(rain|rains)\\b.*", 
+                      replacement = "RAIN", ignore.case = TRUE)
+storms$evtype <- gsub(storms$evtype, pattern = ".*\\b(hurricane|hurricanes)\\b.*", 
+                      replacement = "HURRICANES", ignore.case = TRUE)
+storms$evtype <- gsub(storms$evtype, pattern = ".*\\b(tornado|tornados|tornadoes)\\b.*", 
+                      replacement = "TORNADOS", ignore.case = TRUE)
+storms$evtype <- gsub(storms$evtype, pattern = ".*\\b(cold)\\b.*", 
+                      replacement = "COLD", ignore.case = TRUE)
+storms$evtype <- gsub(storms$evtype, pattern = ".*\\b(wind|winds)\\b.*", 
+                      replacement = "WIND", ignore.case = TRUE)
+storms$evtype <- gsub(storms$evtype, pattern = ".*\\b(flood|floods|flooding)\\b.*", 
+                      replacement = "FLOODS", ignore.case = TRUE)
+storms$evtype <- gsub(storms$evtype, pattern = ".*\\b(volcano|volcanoes|volcanic|lava)\\b.*", 
+                      replacement = "VOLCANOES", ignore.case = TRUE)
+storms$evtype <- gsub(storms$evtype, pattern = ".*\\b(storm|storms)\\b.*", 
+                      replacement = "STORMS", ignore.case = TRUE)
+storms$evtype <- gsub(storms$evtype, pattern = ".*\\b(current|currents)\\b.*", 
+                      replacement = "CURRENTS", ignore.case = TRUE)
+storms$evtype <- gsub(storms$evtype, pattern = ".*\\b(avalanche|avalanches)\\b.*", 
+                      replacement = "AVALANCHES", ignore.case = TRUE)
+storms$evtype <- gsub(storms$evtype, pattern = ".*\\b(hail)\\b.*", 
+                      replacement = "HAIL", ignore.case = TRUE)
+storms$evtype <- gsub(storms$evtype, pattern = ".*\\b(fire|fires|wildfire|wildfires)\\b.*", 
+                      replacement = "FIRE", ignore.case = TRUE)
+storms$evtype <- factor(storms$evtype)
+
+```
+
+Aggregate fatalities and injuries by event type
+```{r}
+#Arrange civil impact by event type
+fatals <- aggregate(cbind(fatalities,injuries) ~ evtype, data = storms, FUN=sum, na.rm = TRUE)
+fatals <- arrange(fatals,desc(fatalities), desc(injuries))
+#Calculate totals
+fatals <- mutate(fatals, total = fatalities + injuries)
+
+#Group 10 most significant events by injuries and deaths
+meltfatals <- melt(head(fatals,10), id.vars = "evtype", measure.vars = c("fatalities","injuries"))
+meltfatals <- arrange(meltfatals,desc(variable), desc(value))
+
+```
+
+Process data to calculate economic damage
 ```{r}
 
-fatals <- tapply(storms, FUN = sum, X = FATALITIES, INDEX = storms$EVTYPE)
-fatals <- aggregate(storms, FUN = sum, by = list(storms$EVTYPE), x = storms$FATALITIES)
+#Filter out unneeded data
+dmg <- filter(storms, propdmg != 0 | cropdmg != 0)
+dmg <- select(storms, evtype, propdmg, propdmgexp, cropdmg, cropdmgexp)
+#Filter out incomplete economic damage info
+dmg <- filter(dmg,(propdmgexp %in% c("K","M","B")) | (cropdmgexp %in% c("K","M","B")))
 
 ```
 
 Calculate economic damage by event type
 ```{r}
+#Calculate property damage
+dmg <- mutate(dmg, properties = ifelse(as.character(propdmgexp) == "K", propdmg*1000, 
+                                       ifelse(as.character(propdmgexp) == "M", propdmg*1000000, 
+                                              ifelse(as.character(propdmgexp) == "B", propdmg*1000000000,0))))
+#Calculate crop damage
+dmg <- mutate(dmg, crops = ifelse(as.character(cropdmgexp) == "K", cropdmg*1000, 
+                                  ifelse(as.character(cropdmgexp) == "M", cropdmg*1000000, 
+                                         ifelse(as.character(cropdmgexp) == "B", cropdmg*1000000000,0))))
+#Set NAs as 0 cost
+dmg$properties[is.na(dmg$properties)] <- 0
+dmg$crops[is.na(dmg$crops)] <- 0
+
 ```
 
+Aggregate material damage
+```{r}
+
+econo <- aggregate(cbind(properties,crops) ~ evtype, data = dmg, FUN=sum, na.rm = TRUE)
+#Calculate total damage in billions of dollars
+econo <- mutate(econo, total = properties + crops)
+econo <- arrange(econo,desc(total))
+
+#Group 10 most significant events by damage type 
+economelt <- melt(head(econo,10), id.vars = "evtype", measure.vars = c("properties","crops"))
+#Transform data representation from dollars to millions of dollars
+economelt$value <- economelt$value / 1000000
+
+```
 
 #Results
 
-Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
+##Injuries and Deaths
+Classification of the relevance of natural events with respect to population health:
 
-Across the United States, which types of events have the greatest economic consequences?
+```{r fig.width=10, fig.height=8}
 
+ggplot(meltfatals, aes(reorder(evtype,-value), value, fill = variable)) + 
+    geom_bar(stat = "identity", aes(y = value)) +
+    theme(axis.text.x = element_text(angle = 90, vjust=0.5)) + 
+    labs(x = "Event", y = "Civilians impacted", title = "Figure 1: Civil Impact") +
+    scale_y_continuous(breaks=seq(0, 100000, by=10000))
 
+```
+*Figue 1.* Top 10 natural events causing the biggest number of deaths and injuries from 1960 to 2011
+
+##Economic Impact
+
+Classification of the relevance of natural events with respect to economic consequences:
+
+```{r fig.width=10, fig.height=8}
+
+ggplot(economelt, aes(reorder(evtype,-value), value, fill = variable)) +
+    geom_bar(stat = "identity") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5)) +
+    labs(x = "Event", y = "Damages (Million $)", title = "Figure 2: Economic Damage") + 
+    scale_y_continuous(breaks=seq(0, 200000, by=20000))
+
+```
+*Figure 2.* Top 10 natural events causing the biggest impact in terms of propery and crop damage from 1960 to 2011
+
+##Summary
+In summary, we can see **Tornados**, **Floods**, **Thunderstorms**, **Hurricanes** and **Storms** as some of the most destructive and deadliest events in nature. 
