@@ -1,18 +1,15 @@
 ---
-title: "Exponential Distribution"
+title: "Exponential Distribution Analysis"
 author: "Tomas Gogorza"
 date: "Monday, September 7, 2015"
-output: html_document
+output: pdf_document
 ---
 
 #Overview
 
-This report conducts contains 2 parts. The first portion of the report is an investigation of the exponential distribution, with focus on taking a sample set and comparing theoretical and sample means, as well as showing distributions.
-The second part of the report will focus on performing some exploratory data analyses on the ToothGrowth data set to compare tooth growth.
+This report is an investigation of the exponential distribution, with focus on taking several sample sets and comparing theoretical and sample means and variances, as well as showing distributions.
 
-#Part I
-##1.1 Simulations
-
+##1 Simulations
 
 Set up simulation variables
 ```{r}
@@ -24,7 +21,7 @@ n <- 40
 ```
 
 Run 1000 simulations, take 40 samples from an exponential distribution for each one.
-The samples are arranged into a 1000x40 matrix, where each row representas a simulation with 40 samples.
+The samples are arranged into a 1000x40 matrix, where each row represents a simulation with 40 samples.
 ```{r}
 simulations <- matrix(rexp(nsim * n,lambda), nsim)
 ```
@@ -35,8 +32,7 @@ mns <- apply(simulations, 1, mean)
 vars <- apply(simulations, 1, var)
 ```
 
-##1.2 Sample Mean vs Theoretical Mean
-
+##2 Sample Mean vs Theoretical Mean
 
 The theoretical mean for an exponential distribution is $1/\lambda$:
 ```{r}
@@ -54,22 +50,9 @@ We can see that the sample mean taken from the means of 1000 simulations is very
 Theoretical mean: **`r mean`**  
 Sample mean: **`r samplemean`**
 
-Draw comparative plots:
-```{r fig.width=12, fig.height=12}
-par(mfrow=c(2,1))
-hist(simulations,breaks = 50, xlab="Sample value", main="Plot1: Theoretical mean")
-abline(v = mean, col = "blue", lwd = 2)
-text(mean+3, 5000 , paste("theoretical mean:", mean), pos = 4, col="blue")
-hist(simulations,breaks = 50, xlab="Sample value", main="Plot2: Sample mean")
-abline(v = samplemean, col = "red", lwd = 2)
-text(samplemean+3, 5000 , paste("sample mean:", samplemean), pos = 4, col="red")
-```
+**Figure 1** and **Figure 2** on the appendix give a more visual comparison of the theoretical and sample means.  
 
-**Plot1.** Histogram of random samples and theoretical mean taken from an exponential distribution  
-**Plot2.** Histogram of random samples and sample mean taken from an exponential distribution
-
-##1.3 Sample Variance vs Theoretical Variance
-
+##3 Sample Variance vs Theoretical Variance
 
 Since $sd=\sqrt{var(X)}$, then $var(X)=sd^{2}$, therefore, given that for an exponential distribution $sd=1/\lambda$, the theoretical variance for an exponential distribution should be $1/\lambda^{2}$:
 ```{r}
@@ -80,6 +63,7 @@ var
 
 To measure the sample variance, we'll get the list of variances previously calculated and extract the mean of that list:
 ```{r}
+#Take an average of the sample vars
 samplevar <- mean(vars)
 samplevar
 ```
@@ -88,26 +72,52 @@ We can effectively see that the sample variance taken from the variances of 1000
 Theoretical variance: **`r var`**  
 Sample variance: **`r samplevar`**
 
-Draw comparative plots:
-```{r fig.width=12, fig.height=12}
-par(mfrow=c(2,1))
-hist(simulations,breaks = 50, xlab="Sample value", main="Plot3: Theoretical variance")
+**Figure 3** and **Figure 4** on the appendix give us a visual comparison of the theoretical and sample variance.  
+
+##1.4 Distribution
+
+Now we'll show that the distribution is approximately normal.
+If we take the 1000 simulations with 40 random samples each and consider it as just 1 simulation with 40000 random draws from en exponential distribution, we can see in **Figure 5** that the distribution is indeed exponential.  
+Finally, if we take the means of the 1000 simulations we ran and plot a histogram, **Figure 6** shows the distribution we get. 
+Per the **Central Limi Theorem**, we can effectively see that the distribution of the means of 1000 simulations (with 40 random samples each) is **approximately normal**.  
+
+\newpage  
+
+#Appendix
+##Figures
+```{r fig.height=3}
+hist(simulations,breaks = 50, xlab="Sample value", main="Figure 1: Theoretical mean")
+abline(v = mean, col = "blue", lwd = 2)
+text(mean+3, 5000 , paste("theoretical mean:", mean), pos = 4, col="blue")
+```
+**Figure 1.** Histogram of random samples and theoretical mean taken from an exponential distribution 
+```{r fig.height=3}
+hist(simulations,breaks = 50, xlab="Sample value", main="Figure 2: Sample mean")
+abline(v = samplemean, col = "red", lwd = 2)
+text(samplemean+3, 5000 , paste("sample mean:", samplemean), pos = 4, col="red")
+```
+**Figure 2.** Histogram of random samples and sample mean taken from an exponential distribution
+```{r fig.height=3}
+hist(simulations,breaks = 50, xlab="Sample value", main="Figure 3: Theoretical variance")
 abline(v = mean, col = "blue", lwd = 1)
 abline(v = var, col = "blue", lwd = 2)
 text(var+3, 5000 , paste("theoretical var:", var), pos = 4, col="blue")
-hist(simulations,breaks = 50, xlab="Sample value", main="Plot4: Sample variance")
+```
+**Figure 3.** Histogram of random samples, theoretical mean and theoretical variance taken from an exponential distribution
+```{r fig.height=3}
+hist(simulations,breaks = 50, xlab="Sample value", main="Figure 4: Sample variance")
 abline(v = samplemean, col = "red", lwd = 1)
 abline(v = samplevar, col = "red", lwd = 2)
 text(samplevar+3, 5000 , paste("sample var:", samplevar), pos = 4, col="red")
 ```
-
-**Plot3.** Histogram of random samples, theoretical mean and theoretical variance taken from an exponential distribution  
-**Plot4.** Histogram of random samples, sample mean and sample variance taken from an exponential distribution
-
-##1.4 Distribution
-
-```{r fig.width=12, fig.height=12}
-par(mfrow=c(2,1))
-hist(rexp(nsim * n,lambda),breaks=50)
-hist(mns,breaks=50)
+**Figure 4.** Histogram of random samples, sample mean and sample variance taken from an exponential distribution
+```{r fig.height=3}
+hist(simulations,breaks=50, xlab="Sample value", 
+     main="Figure 5: Exponential Distribution Random Samples")
 ```
+**Figure 5.** 40000 random samples drawn from an exponential distribution
+```{r fig.height=3}
+hist(mns,breaks=50, xlab="Sample value", 
+     main="Figure 6: Distribution of 1000 sample means")
+```
+**Figure 6.** Distribution of the means of 1000 simulations

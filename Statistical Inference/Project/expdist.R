@@ -23,7 +23,7 @@ abline(v = samplemean, col = "red", lwd = 1)
 text(samplemean+3, 5000 , paste("sample mean:", samplemean), pos = 4, col="red")
 
 #2. Sample variance vs. Theoretical variance
-vars <- apply(simulations, 1, var)
+vars <- apply(simulations, 1, var) 
 samplevar <- mean(vars)
 var
 samplevar
