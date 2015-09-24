@@ -1,8 +1,39 @@
 ---
-title: "ToothGrowth Analysis"
+title: "Tooth Growth Analysis"
 author: "Tomas Gogorza"
-date: "Tuesday, September 08, 2015"
+date: "Tuesday, September 15, 2015"
 output: pdf_document
 ---
+#Summary
+This document shows a quick analysis and statistical comparison of 2 different supplements in 3 different doses for tooth growth.
+
+#Data Analysis
+Load data
+```{r warning=FALSE, message=FALSE, error=FALSE}
+library(ggplot2)
+library(dplyr)
+
+data("ToothGrowth")
+data <- as.data.frame(ToothGrowth)
+summary(data)
+```
+From a quick overview of the data, we can see that there are 2 different supplements (OJ & VC) and the dosage range from 0.5 to 2.  
+We can plot the samples distribution to get a graphical sense of the difference between supplements and dosage.
+```{r}
+ggplot(data, aes(x=factor(dose),y=len)) + geom_boxplot() + facet_grid(.~supp) + 
+    labs(title="Dose vs Length by Supplement Type", y="Length", x="Dose")
+```
+**Figure 1.** Distribution of tooth length by dosage, grouped by supplement type  
 
 
+#Comparison
+In order to determine which kind of supplement type is more efficient (if any), we'll perform a dose by dose comparison between them.
+
+##Small Dose (0.5)
+
+
+##Medium Dose (1)
+
+##Large Dose (2)
+
+#Conclusions and Assumptions
