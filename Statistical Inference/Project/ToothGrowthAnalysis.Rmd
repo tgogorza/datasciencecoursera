@@ -5,7 +5,7 @@ date: "Tuesday, September 15, 2015"
 output: pdf_document
 ---
 #Summary
-This document shows a quick analysis and statistical comparison of 2 different supplements in 3 different doses for tooth growth.
+This document shows a quick analysis and statistical comparison of 2 different supplements (orange juice or ascorbic acid) and 3 different doses (0.5, 1 and 2 mg) used to analyze their influence in tooth growth on guinea pigs.
 
 #Data Analysis
 Load data
@@ -18,22 +18,62 @@ data <- as.data.frame(ToothGrowth)
 summary(data)
 ```
 From a quick overview of the data, we can see that there are 2 different supplements (OJ & VC) and the dosage range from 0.5 to 2.  
-We can plot the samples distribution to get a graphical sense of the difference between supplements and dosage.
-```{r}
-ggplot(data, aes(x=factor(dose),y=len)) + geom_boxplot() + facet_grid(.~supp) + 
-    labs(title="Dose vs Length by Supplement Type", y="Length", x="Dose")
-```
-**Figure 1.** Distribution of tooth length by dosage, grouped by supplement type  
-
+**Figure 1** in the Appendix shows the samples distribution to give a graphical sense of the difference between supplements and dosage.
 
 #Comparison
-In order to determine which kind of supplement type is more efficient (if any), we'll perform a dose by dose comparison between them.
+In order to determine which kind of supplement type is more efficient (if any), we'll perform a dose by dose comparison between them. We'll say that the difference of means between both supplements is 0, meaning there's no difference between the supplements, and take that hypothesis as H0.
 
-##Small Dose (0.5)
+##Small Dose (0.5 mg)
+We perform a T test on the small dosage samples for both supplements:
+```{r}
+sdoseoj <- select(filter(data, supp == "OJ" & dose==0.5),len)
+sdosevc <- select(filter(data, supp == "VC" & dose==0.5),len)
+smalltest <- t.test(sdoseoj,sdosevc,paired = FALSE,var.equal = FALSE)
+smalltest
+```
+We can see the confidence interval, ranging from **`r smalltest$conf.int[1]`** to **`r smalltest$conf.int[2]`**, doesn't contain 0, and so we can reject H0 with 95% confidence, therefore one of the supplements is more effective than the other when using a 0.5 mg dose. Moreover, with a p value of **`r smalltest$p.value`%**, a lot smaller than 5%, we can assert that the null hypothesis if false.
 
+##Medium Dose (1 mg)
+We perform a T test on the medium dosage samples for both supplements:
+```{r}
+mdoseoj <- select(filter(data, supp == "OJ" & dose==1),len)
+mdosevc <- select(filter(data, supp == "VC" & dose==1),len)
+medtest <- t.test(mdoseoj,mdosevc,paired = FALSE,var.equal = FALSE)
+medtest
+```
+Again, we can see the confidence interval, ranging from **`r medtest$conf.int[1]`** to **`r medtest$conf.int[2]`**, doesn't contain 0, and so we can reject H0 with 95% confidence, therefore one of the supplements is also more effective than the other when using a 1 mg dose. Moreover, with a p value of **`r medtest$p.value`%**, a lot smaller than 5%, we can assert that the null hypothesis if false.
 
-##Medium Dose (1)
+##Large Dose (2 mg)
+We perform a T test on the large dosage samples for both supplements:
+```{r}
+ldoseoj <- select(filter(data, supp == "OJ" & dose==2),len)
+ldosevc <- select(filter(data, supp == "VC" & dose==2),len)
+largetest <- t.test(ldoseoj,ldosevc,paired = FALSE,var.equal = FALSE)
+largetest
+```
+In this case, with a CI in the range of **`r largetest$conf.int[1]`** to **`r largetest$conf.int[2]`**, we can see that the mean difference of 0 falls within our interval, meaning we cannot rule out H0 for the case of tests with a 2 mg dose. A p value **`r largetest$p.value`%** shows support for the null hypothesis as well.
 
-##Large Dose (2)
+##OJ vs VC
+Finally, an overall test between samples taking VC and samples using OJ for tooth growth: 
+```{r}
+oj <- rbind(sdoseoj,mdoseoj,ldoseoj)
+vc <- rbind(sdosevc,mdosevc,ldosevc)
+ojvsvc <- t.test(oj,vc,paired = FALSE,var.equal = FALSE)
+ojvsvc$conf.int
+ojvsvc$p.value
+```
+Again, with a CI in the range of **`r ojvsvc$conf.int[1]`** to **`r ojvsvc$conf.int[2]`**, we can see that the mean difference of 0 falls within our interval, meaning we cannot rule out H0 in the overall comparison. A p value **`r ojvsvc$p.value`%** also shows support for the null hypothesis in this case.
 
 #Conclusions and Assumptions
+After performing tests case by case, it can be stated that when using 0.5 mg and 1 mg doses, the orange juice (OJ) is much more effective than the ascorbic acid (VC), as we can also see in Figure1. In the case of large doses, we cannot determine which, if any, supplement works better.
+As a final note, some assumptions had to be made in order to perform the analysis. We assumed that that the variances between groups were unequal so when running t tests the parameter var.equal = FALSE was used. Also, for hypothesis testing, we took H0 to consider that if the mean of the difference between groups is 0, we cannot ensure one supplement to be more effective than the other.
+
+\newpage
+
+#Appendix
+##Figure 1
+```{r}
+ggplot(data, aes(x=factor(dose),y=len)) + geom_boxplot() + facet_grid(.~supp) + 
+    labs(title="Dose vs Length by Supplement Type", y="Length (mm)", x="Dose (mg)")
+```
+**Figure 1.** Distribution of tooth length by dosage, grouped by supplement type  

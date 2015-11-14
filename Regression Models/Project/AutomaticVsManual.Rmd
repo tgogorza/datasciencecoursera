@@ -1,0 +1,93 @@
+---
+title: 'Automatic vs Manual: Influence of Transmission in MPG'
+author: "Tomas Gogorza"
+date: "November 14, 2015"
+output: pdf_document
+---
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(GGally)
+library(dplyr)
+data("mtcars")
+mtcars$am <- factor(mtcars$am)
+```
+
+#Executive Summary
+
+This report explores the relationship and differences of fuel efficiency for cars with automatic and manual transmission. A data set with 10 specifications for 32 different cars has been used for this analysis. To explain the difference in mileage between automatic and manual transmission this document also takes into account a few more car properties.
+
+
+#Data Analysis
+The data set contains information about 32 different cars. This is a sample of 5 cars out of the data set:
+```{r echo=FALSE}
+head(mtcars,5)
+meanAuto <- mean(filter(mtcars,am==0)[,"mpg"])
+meanManual <- mean(filter(mtcars,am==1)[,"mpg"])
+```
+
+To get an initial sense of the relationship between transmission type and fuel consumption, in **Figure 1** it is shown that cars with manual transmission tend to have better performance, with an average consumption of **`r meanManual`** MPG for manual transmission cars and **`r meanAuto`** MPG for cars running on automatic transmission. Although the figure shows a tendency of better fuel autonomy on models with manual transmission, we can also find some cars with manual transmission which perform worse than the average consumption for automatic cars. This criterion applies the other way around as well, meaning, we can find some models with automatic transmission with a better MPG rate than the average for manual ones. Given this information, we can not conclude that manual transmission will always guarantee better performance in terms of fuel consumption. We'll perform a more detailed analysis including other indicators to explore this relationship more in depth.
+
+
+#Model
+By doing an analysis of relationships between the features in the data set (see **Figure 3** in the Appendix), we can determine that Number of Cylinders (cyl), Displacement (disp), Horsepower (hp) and Weight (wt) are the factors most related to the MPG measurement. Since cyl, disp and hp are heavily correlated to each other as well, we will leave cyl and disp out when creating the linear model.
+Fitting the linear model with the aforementioned regressors we get the following outcome:
+```{r}
+trlm <- lm(mpg~wt+hp,mtcars)
+trlm2 <- update(trlm,mpg~wt+hp+am,mtcars)
+summary(trlm2)$coefficients
+```
+
+The linear model summary shows an average difference of **2 MPG** between automatic and manual transmission vehicles, but we can also see a high p-value (0.14) for the transmission type property, which means transmission type is not significant for predicting MPG for a car. 
+Furthermore, we can also see the same by doing an analysis of variance between a linear model without a transmission specification and a model with it included.
+
+```{r}
+anova(trlm,trlm2)
+```
+
+The high p-value for the F-Statistic shows that including am is not important for the prediction model.
+
+We can also see in **Figure 2**. the importance of weight and power and their relationship with the transmission type and mpg.
+
+#Conclusions
+
+Even though there is a clear trend which shows that cars using automatic transmission have lower efficiency in fuel consumption, it cannot be stated that it's solely and directly related to transmission type.
+
+\newpage
+
+#Appendix
+```{r fig.height=3,fig.width=5, echo=FALSE}
+ggplot(mtcars,aes(x=am,y=mpg,color=am)) +
+       labs(title="Figure1: MPG by Transmission type",x="Transmission",y="MPG") +
+       scale_color_discrete(breaks = c("0","1"), labels=c("Automatic","Manual")) + 
+       geom_boxplot() 
+```
+
+**Figure 1.** Distribution of mileage by transmission type 
+
+```{r fig.height=4,fig.width=6, echo=FALSE}
+ggplot(mtcars,aes(wt,hp)) + 
+    labs(title="Figure 2: Vehicle Weight vs. Gross Horsepower",x="Weight",y="Horsepower") +
+    scale_shape_discrete(breaks = c("0","1"), labels=c("Automatic","Manual"), name="Transmission") + 
+    scale_size(guide=FALSE) +
+    geom_point(aes(color=mpg,shape=factor(am),size=6))
+```
+
+**Figure 2.** Vehicle Weight vs. Gross Horsepower and relation with Transmission type and MPG
+
+```{r cache=TRUE, warning=FALSE, message=FALSE, echo=FALSE, fig.height=4}
+#pairs(mpg~am+hp+cyl+wt,mtcars, col = 3 + (mtcars$am == 0), panel = panel.smooth)
+ggpairs(mtcars,lower=list(continuous="smooth",params=list(method="loess")), 
+        #upper= list(continuous = wrap("cor", size = 4)),
+        upper=list(params=list(size=3)),
+        colour = "am",columns = c(1,2,3,4,6,9))
+```
+
+**Figure 3.** Relationships between data set features
+
+```{r fig.height=4,fig.width=6, echo=FALSE}
+par(mfrow = c(2,2))
+plot(trlm)
+```
+
+**Figure 4.** Analysis of residuals

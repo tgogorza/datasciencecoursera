@@ -32,3 +32,7 @@ largetest$p.value
 #sdose <- rbind(sdoseoj,sdosevc)
 #mdose <- rbind(mdoseoj,mdosevc)
 #ldose <- rbind(ldoseoj,ldosevc)
+
+oj <- rbind(sdoseoj,mdoseoj,ldoseoj)
+vc <- rbind(sdosevc,mdosevc,ldosevc)
+t.test(oj,vc,paired = FALSE,var.equal = FALSE)
