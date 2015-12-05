@@ -78,19 +78,19 @@ gbmFit <- train(x=trainData, y=trainLabels,
 rfFit <- train(x=trainData, y=trainLabels,
                  method = "rf",
                  #trControl = fitControl,
-                 #preProcess=c("pca"),
+                 preProcess=c("pca"),
                  verbose = FALSE)
 
 adaFit <- train(x=trainData, y=trainLabels,
                  method = "ada",
                  #trControl = fitControl,
-                 #preProcess=c("pca"),
+                 preProcess=c("pca"),
                  verbose = FALSE)
 
 nbFit <- train(x=trainData, y=trainLabels,
                  method = "nb",
                  #trControl = fitControl,
-                 #preProcess=c("pca"),
+                 preProcess=c("pca"),
                  verbose = FALSE)
 
 stopCluster(cl)
@@ -120,6 +120,8 @@ confusionMatrix(prednb,validationLabels)
 predict(gbmFit, newdata = testData)
 predict(rfFit, newdata = testData)
 predict(nbFit, newdata = testData)
+
+actualLabels <- c("","A","","A","A","E","D","","A","A","","","B","A","E","","A","B","","B")
 
 ```
 
