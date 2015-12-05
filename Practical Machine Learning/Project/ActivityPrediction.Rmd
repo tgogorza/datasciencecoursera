@@ -119,10 +119,11 @@ confusionMatrix(prednb,validationLabels)
 
 predict(gbmFit, newdata = testData)
 predict(rfFit, newdata = testData)
+predict(nbFit, newdata = testData)
 
 ```
 
-```{r}
+```{r cache=TRUE}
 pml_write_files = function(x){
   n = length(x)
   for(i in 1:n){
@@ -134,5 +135,5 @@ pml_write_files = function(x){
 ```
 
 ```{r}
-pml_write_files(predict(gbmFit,newdata = testData))
+pml_write_files(predict(nbFit,newdata = testData))
 ```
