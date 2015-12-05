@@ -1,5 +1,5 @@
 ---
-title: 'Automatic vs Manual: Influence of Transmission in MPG'
+title: 'Automatic vs Manual: Influence in Fuel Autonomy'
 author: "Tomas Gogorza"
 date: "November 14, 2015"
 output: pdf_document
@@ -15,8 +15,7 @@ mtcars$am <- factor(mtcars$am)
 
 #Executive Summary
 
-This report explores the relationship and differences of fuel efficiency for cars with automatic and manual transmission. A data set with 10 specifications for 32 different cars has been used for this analysis. To explain the difference in mileage between automatic and manual transmission this document also takes into account a few more car properties.
-
+This report explores the relationship and differences of fuel efficiency for cars with automatic and manual transmission. A data set with 10 specifications for 32 different cars has been used for this analysis. To explain the difference in mileage between automatic and manual transmission this document also takes into account a few more car properties. A predictive model is formulated from the existing information to explain overall vehicles' fuel autonomy.
 
 #Data Analysis
 The data set contains information about 32 different cars. This is a sample of 5 cars out of the data set:
@@ -49,9 +48,20 @@ The high p-value for the F-Statistic shows that including am is not important fo
 
 We can also see in **Figure 2**. the importance of weight and power and their relationship with the transmission type and mpg.
 
+```{r}
+coefs <- summary(trlm)$coefficients
+cii <- coefs[1,1] + c(-1,1) * qt(.975,df=trlm$df) * coefs[1,2]
+ciwt <- coefs[2,1] + c(-1,1) * qt(.975,df=trlm$df) * coefs[2,2]
+cihp <- (coefs[3,1] + c(-1,1) * qt(.975,df=trlm$df) * coefs[3,2]) * 100
+```
+
+After calculating the confidence intervals for the regressor variables, we can say with 95% confidence that fuel autonomy will drop between **`r round(-ciwt[2],1)`** and **`r round(-ciwt[1],1)`** MPG for each extra lb the car gets, and it will also decrease between **`r round(-cihp[2],1)`** and **`r round(-cihp[1],1)`** MPG every 100 hp increase in gross power.
+
+To finish with the formulation of the linear model, an analysis of residuals is performed and displayed on **Figure 4**. We can see on the residuals and standardized residuals plots that there's no particular pattern on the distribution suggesting heteroskedasticity or any abnormal behavior. The Normal Q-Q plot also suggests normality of the error terms.
+
 #Conclusions
 
-Even though there is a clear trend which shows that cars using automatic transmission have lower efficiency in fuel consumption, it cannot be stated that it's solely and directly related to transmission type.
+Even though there is a clear trend which shows that cars using automatic transmission have lower efficiency in fuel consumption, it cannot be stated that it's solely and directly related to transmission type. The variation in MPG can be better explained in relation to vehicles' weight and power.   
 
 \newpage
 
