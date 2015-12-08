@@ -1,22 +1,25 @@
 ---
 title: "Activity Correctness Prediction"
 author: "Tomas Gogorza"
-date: "27 de noviembre de 2015"
+date: "8 de Diciembre de 2015"
 output: html_document
 ---
 
-#Load and Understand Data
-
-```{r}
+```{r echo=FALSE}
 library(caret)
 library(parallel)
 library(doSNOW)
-#library(norm)
 library(dplyr)
+
+setwd("D:/Tomas/datasciencecoursera/Practical Machine Learning/Project")
 ```
 
-#Load and Clean Data Set
+#About the Data Set
 
+The data used in this project was provided by the Human Activity Recognition project and contains information about weight lifting excercises performed by 6 different individuals. Each performance was measured by 4 different sensors. The labels in the data set indicate wether the excercise was completed according to the specifications or if there was any kind of incorrect movement.
+
+#Load and Clean Data Set
+After loading the training and testing data sets and performing some exploratory analysis, there are many properties with missing data which can be removed to enhance our predictive model. Given the large number of NA values, it was decided not impute any missing data, and instead just remove the variables.  The first 7 columns containing information not relevant to our prediction purposes are also removed. 
 ```{r cache=TRUE}
 trainData <- read.csv("pml-training.csv")
 testData <- read.csv("pml-testing.csv")
@@ -26,26 +29,28 @@ classe <- trainData$classe
 trainData <- select(trainData,-classe)
 trainData <- trainData[ , apply(trainData,2,function(x){ sum(is.na(x)) < 19000 })]
 trainData <- trainData[ , apply(trainData,2,function(x){ !("#DIV/0!" %in% x) })]
-trainData <- trainData[ , -c(2:6)]
+trainData <- trainData[ , -c(1:7)]
 
 testData <- select(testData,-problem_id) 
 testData <- testData[ , apply(testData,2,function(x){ sum(is.na(x)) != 20 })]
 testData <- testData[ , apply(testData,2,function(x){ !("#DIV/0!" %in% x) })]
-testData <- testData[ , -c(2:6)]
+testData <- testData[ , -c(1:7)]
 
-str(trainData)
-str(testData)
 ```
 
-#Predictive Model
+#Pre-Processing / Normalization
 
-```{r, echo=FALSE}
+After removing unwanted parameters, we center and scale all our variables to prevent our predictive model from being affected by skewness of the data as well as high variability.
+After normalizing the training data, some dimensionality reduction is performed by means of Principal Component Analysis to reduce the number of predictors and also the noise that could be added by non relevant features.
 
-preProcValues <- preProcess(trainData, method = c("center", "scale"))
-#preProcTest <- preProcess(testData, method = c("center", "scale"))
+```{r}
+set.seed(321456)
+#Feature centering and scaling
+#preProcValues <- preProcess(trainData, method = c("center", "scale"))
+#trainData <- predict(preProcValues, trainData)
+#testData <- predict(preProcValues, testData)
 
-trainData <- predict(preProcValues, trainData)
-testData <- predict(preProcValues, testData)
+preProc <- c("center","scale","pca")
 
 #Create Cross Validation set
 trainInd <- createDataPartition(classe, p = 0.8, list = FALSE)
@@ -53,79 +58,68 @@ validationData <- trainData[-trainInd,]
 validationLabels <- classe[-trainInd]
 trainData <- trainData[trainInd,]
 trainLabels <- classe[trainInd]
+```
+After applying some pre-processing we slice the training set and create a small validation set so we can compare performance of the trained models.
 
-#Dimensionality Reduction
+#Predictive Models
 
+We'll be training 2 predictive models to compare performance and we'll take the most accurate one to predict the test cases.
+The first model is a Gradient Boosting Machine and the second one will be a Random Forest. In both cases we'll use repeated cross validation with 5 repetitions as training control.
+For speedup purposes, we'll be using 4 CPU cores to train the models.
+
+```{r, echo=FALSE, cache=TRUE}
 
 #Parallel Training
 cl <- makeCluster(4, type = "SOCK")
 registerDoSNOW(cl)
 
-fitControl <- trainControl(method="repeatedcv",  #method = "repeatedcv",
-                           #number = 5)
-                           #number = 10,
-                           repeats = 5)
-
-clusterSetupRNG(cl, seed=rep(12345,6))
-a <- clusterCall(cl, runif, 10000)
+fitControl <- trainControl(method="repeatedcv", repeats = 5, allowParallel = TRUE)
 
 gbmFit <- train(x=trainData, y=trainLabels,
                  method = "gbm",
-                 #trControl = fitControl,
-                 preProcess=c("pca"),
+                 trControl = fitControl,
+                 preProcess= preProc,
                  verbose = FALSE)
+save(gbmFit,file = "gbmFit.Rmodel")
 
 rfFit <- train(x=trainData, y=trainLabels,
                  method = "rf",
-                 #trControl = fitControl,
-                 preProcess=c("pca"),
+                 trControl = fitControl,
+                 preProcess= reProc,
                  verbose = FALSE)
-
-adaFit <- train(x=trainData, y=trainLabels,
-                 method = "ada",
-                 #trControl = fitControl,
-                 preProcess=c("pca"),
-                 verbose = FALSE)
-
-nbFit <- train(x=trainData, y=trainLabels,
-                 method = "nb",
-                 #trControl = fitControl,
-                 preProcess=c("pca"),
-                 verbose = FALSE)
+save(rfFit,file = "rfFit.Rmodel")
 
 stopCluster(cl)
 ```
 
+#Prediction Performance
 
-#Prediction
+After training the models we use the validation data we took out of the training set to measure the accuracy of the GBM and RF models.
+
 ```{r}
-save(rfFit,file = "rfFit.RData")
-save(rfFit,file = "rfFitPCA.RData")
-save(gbmFit,file = "gbmFit.RData")
-save(adaFit,file = "adaFit.RData")
-save(nbFit,file = "nbFit.RData")
+load(file = "gbmFit.Rmodel")
+predvgbm <- predict(gbmFit,newdata = validationData)
+cmgbm <- confusionMatrix(predvgbm,validationLabels)
+cmgbm
 
-pred <- predict(gbmFit,newdata = validationData)
-confusionMatrix(pred,validationLabels)
+load(file = "rfFit.Rmodel")
+predvrf <- predict(rfFit,newdata = validationData)
+cmrf <- confusionMatrix(predvrf,validationLabels)
+cmrf
 
-predrf <- predict(rfFit,newdata = validationData)
-confusionMatrix(predrf,validationLabels)
+#predgbm <- predict(gbmFit, newdata = testData)
+#predrf <- predict(rfFit, newdata = testData)
 
-predada <- predict(adaFit,newdata = validationData)
-confusionMatrix(predada,validationLabels)
-
-prednb <- predict(nbFit,newdata = validationData)
-confusionMatrix(prednb,validationLabels)
-
-predict(gbmFit, newdata = testData)
-predict(rfFit, newdata = testData)
-predict(nbFit, newdata = testData)
-
-actualLabels <- c("","A","","A","A","E","D","","A","A","","","B","A","E","","A","B","","B")
+#actualLabels <- c("B","A","","A","A","E","D","B","A","A","B","C","B","A","E","E","A","B","B","B")
 
 ```
+We can see that the Random Forest turns out to be a more accurate predictor with a very high accuracy of **`r cmrf$overall[1]`%** against a still pretty nice **`r cmgbm$overall[1]`%** given by the GBM predictor.
+After this comparison we select the Random Forest model for our final prediction, so this means our expected **out of sample accuracy** should be around **`r cmrf$overall[1]`%**.
 
-```{r cache=TRUE}
+#Final Prediction
+
+Finally we use our trained Random Forest to predict the test set. This is the final result:
+```{r cache=TRUE, echo=FALSE}
 pml_write_files = function(x){
   n = length(x)
   for(i in 1:n){
@@ -137,5 +131,8 @@ pml_write_files = function(x){
 ```
 
 ```{r}
-pml_write_files(predict(nbFit,newdata = testData))
+testPred <- predict(rfFit,newdata = testData)
+pml_write_files(testPred)
+testPred
 ```
+Which manages to predict 19 out of 20 test cases correctly, giving a **95%** precision, which is very close to the expected out of sample prediction of **`r cmrf$overall[1]`%**  we found when doing cross validation.
