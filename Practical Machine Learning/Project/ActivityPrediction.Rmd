@@ -1,26 +1,25 @@
 ---
 title: "Activity Correctness Prediction"
 author: "Tomas Gogorza"
-date: "8 de Diciembre de 2015"
-output: html_document
+date: "December 8th, 2015"
+output: pdf_document
 ---
 
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 library(caret)
 library(parallel)
 library(doSNOW)
 library(dplyr)
-
-setwd("D:/Tomas/datasciencecoursera/Practical Machine Learning/Project")
 ```
 
 #About the Data Set
 
-The data used in this project was provided by the Human Activity Recognition project and contains information about weight lifting excercises performed by 6 different individuals. Each performance was measured by 4 different sensors. The labels in the data set indicate wether the excercise was completed according to the specifications or if there was any kind of incorrect movement.
+The data used in this project was provided by the Human Activity Recognition project and contains information about weight lifting exercises performed by 6 different individuals. Each performance was measured by 4 different sensors. The labels in the data set indicate whether the exercise was completed according to the specifications or if there was any kind of incorrect movement.
 
 #Load and Clean Data Set
-After loading the training and testing data sets and performing some exploratory analysis, there are many properties with missing data which can be removed to enhance our predictive model. Given the large number of NA values, it was decided not impute any missing data, and instead just remove the variables.  The first 7 columns containing information not relevant to our prediction purposes are also removed. 
-```{r cache=TRUE}
+After loading the training and testing data sets and performing some exploratory analysis, there are many properties with missing data which can be removed to enhance our predictive model. Given the large number of NA values, it was decided not impute any missing data, and instead just remove the variables.  The first 7 columns containing information not relevant to our prediction purposes are also removed.
+
+```{r cache=TRUE, warning=FALSE, message=FALSE}
 trainData <- read.csv("pml-training.csv")
 testData <- read.csv("pml-testing.csv")
 
@@ -35,8 +34,9 @@ testData <- select(testData,-problem_id)
 testData <- testData[ , apply(testData,2,function(x){ sum(is.na(x)) != 20 })]
 testData <- testData[ , apply(testData,2,function(x){ !("#DIV/0!" %in% x) })]
 testData <- testData[ , -c(1:7)]
-
 ```
+
+After removing irrelevant features, we are only left with raw sensors data, with a total of `r ncol(trainData)` input variables.
 
 #Pre-Processing / Normalization
 
@@ -45,11 +45,7 @@ After normalizing the training data, some dimensionality reduction is performed 
 
 ```{r}
 set.seed(321456)
-#Feature centering and scaling
-#preProcValues <- preProcess(trainData, method = c("center", "scale"))
-#trainData <- predict(preProcValues, trainData)
-#testData <- predict(preProcValues, testData)
-
+#Features centering and scaling, and principal component analysis
 preProc <- c("center","scale","pca")
 
 #Create Cross Validation set
@@ -59,6 +55,7 @@ validationLabels <- classe[-trainInd]
 trainData <- trainData[trainInd,]
 trainLabels <- classe[trainInd]
 ```
+
 After applying some pre-processing we slice the training set and create a small validation set so we can compare performance of the trained models.
 
 #Predictive Models
@@ -67,36 +64,37 @@ We'll be training 2 predictive models to compare performance and we'll take the 
 The first model is a Gradient Boosting Machine and the second one will be a Random Forest. In both cases we'll use repeated cross validation with 5 repetitions as training control.
 For speedup purposes, we'll be using 4 CPU cores to train the models.
 
-```{r, echo=FALSE, cache=TRUE}
+```{r cache=TRUE, eval=FALSE}
 
 #Parallel Training
 cl <- makeCluster(4, type = "SOCK")
 registerDoSNOW(cl)
-
+#Perform cross validation on training
 fitControl <- trainControl(method="repeatedcv", repeats = 5, allowParallel = TRUE)
-
+#Gradient Boosting model
 gbmFit <- train(x=trainData, y=trainLabels,
                  method = "gbm",
                  trControl = fitControl,
                  preProcess= preProc,
                  verbose = FALSE)
 save(gbmFit,file = "gbmFit.Rmodel")
-
+#Random Forest model
 rfFit <- train(x=trainData, y=trainLabels,
                  method = "rf",
                  trControl = fitControl,
-                 preProcess= reProc,
+                 preProcess= preProc,
                  verbose = FALSE)
 save(rfFit,file = "rfFit.Rmodel")
 
 stopCluster(cl)
+
 ```
 
 #Prediction Performance
 
 After training the models we use the validation data we took out of the training set to measure the accuracy of the GBM and RF models.
 
-```{r}
+```{r warning=FALSE, message=FALSE}
 load(file = "gbmFit.Rmodel")
 predvgbm <- predict(gbmFit,newdata = validationData)
 cmgbm <- confusionMatrix(predvgbm,validationLabels)
@@ -106,20 +104,15 @@ load(file = "rfFit.Rmodel")
 predvrf <- predict(rfFit,newdata = validationData)
 cmrf <- confusionMatrix(predvrf,validationLabels)
 cmrf
-
-#predgbm <- predict(gbmFit, newdata = testData)
-#predrf <- predict(rfFit, newdata = testData)
-
-#actualLabels <- c("B","A","","A","A","E","D","B","A","A","B","C","B","A","E","E","A","B","B","B")
-
 ```
-We can see that the Random Forest turns out to be a more accurate predictor with a very high accuracy of **`r cmrf$overall[1]`%** against a still pretty nice **`r cmgbm$overall[1]`%** given by the GBM predictor.
-After this comparison we select the Random Forest model for our final prediction, so this means our expected **out of sample accuracy** should be around **`r cmrf$overall[1]`%**.
+
+We can see that the Random Forest turns out to be a more accurate predictor with a very high accuracy of **`r round(cmrf$overall[1]*100,2)`%** against a still pretty nice **`r round(cmgbm$overall[1]*100,2)`%** given by the GBM predictor.
+After this comparison we select the Random Forest model for our final prediction, so this means our expected **out of sample accuracy** should be under **`r round(cmrf$overall[1]*100,2)`%**, since out of sample error is always larger than in sample error.
 
 #Final Prediction
 
 Finally we use our trained Random Forest to predict the test set. This is the final result:
-```{r cache=TRUE, echo=FALSE}
+```{r echo=FALSE}
 pml_write_files = function(x){
   n = length(x)
   for(i in 1:n){
@@ -127,7 +120,6 @@ pml_write_files = function(x){
     write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
   }
 }
-
 ```
 
 ```{r}
@@ -135,4 +127,16 @@ testPred <- predict(rfFit,newdata = testData)
 pml_write_files(testPred)
 testPred
 ```
-Which manages to predict 19 out of 20 test cases correctly, giving a **95%** precision, which is very close to the expected out of sample prediction of **`r cmrf$overall[1]`%**  we found when doing cross validation.
+
+We can compare the predicted results to the actual classes:
+
+```{r}
+actualLabels <- factor(c("B","A","B","A","A","E","D","B","A","A",
+                         "B","C","B","A","E","E","A","B","B","B"))
+actualLabels
+#Get prediction accuracy
+precision <- sum(testPred == actualLabels) / length(actualLabels)
+precision
+```
+
+Our predictive model manages to predict 19 out of 20 classes correctly, giving out a **`r precision * 100`%** precision, which is very close to the expected out of sample prediction of **`r round(cmrf$overall[1]*100,2)`%** we found when doing cross validation.
