@@ -1,0 +1,80 @@
+---
+title       : Developing Data Products
+subtitle    : Myo Armband Reader
+author      : Tomas Gogorza
+job         : 
+framework   : revealjs        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+<!-- Limit image width and height -->
+<style type='text/css'>
+img {
+    max-height: 450px;
+    max-width: 964px;
+}
+</style>
+
+<!-- Center image on slide -->
+<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+<script type='text/javascript'>
+$(function() {
+    $("p:has(img)").addClass('centered');
+});
+</script>
+
+## Developing Data Products
+
+# Myo Armband Reader
+
+Tomas Gogorza
+
+---
+
+## Myo Armband
+
+The Myo Armband (http://www.myo.com) lets you remotely control technology with gestures and motion.
+It reads information from 4 different types of sensors:
+
+
+- EMG (electromyographic)
+- Gyroscope     
+- Accelerometer 
+- Orientation
+
+---
+
+## Reading the Data
+
+The Reader web app loads sample data captured from the armband and stored into CSV files.
+The data is read from 4 different files (one for each sensor)
+
+This is a sample read from the accelerometer: 
+```{r, echo=FALSE, cache=TRUE}
+accData <- read.csv("accelerometer.csv")
+head(accData,8)
+```
+
+---
+
+## Data Plots
+
+Sensor data is plotted into an easy to visualize format, which lets the user get a better understanding and perform a quick analysis of the sensor data:
+
+```{r, echo=FALSE, cache=TRUE, fig.height=6, fig.width=6}
+library(ggplot2)
+ggplot(accData,aes(timestamp,x)) + geom_point() + stat_smooth() + xlab("time")
+
+```
+
+---
+
+## MyoReader Web
+
+You can access the shiny app at http://tgogorza.shinyapps.io/MyoReader
+
+![width](assets/img/MyoReader.jpg)

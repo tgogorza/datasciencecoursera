@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Developing Data Products</title>
+  <meta name="description" content="">
+  <meta name="author" content="Tomas Gogorza">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="stylesheet" href="libraries/frameworks/revealjs/css/reveal.min.css">
+  <link rel="stylesheet" href="libraries/frameworks/revealjs/css/theme/default.css" id="theme">
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" id="theme">
+  <!--[if lt IE 9]>
+  <script src="lib/js/html5shiv.js"></script>
+  <![endif]-->  <link rel="stylesheet" href = "assets/css/ribbons.css">
+
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section class='' data-state='' id='slide-1'>
+  
+  <!-- Limit image width and height -->
+
+<style type='text/css'>
+img {
+    max-height: 450px;
+    max-width: 964px;
+}
+</style>
+
+<!-- Center image on slide -->
+
+<script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+
+<script type='text/javascript'>
+$(function() {
+    $("p:has(img)").addClass('centered');
+});
+</script>
+
+<h2>Developing Data Products</h2>
+
+<h1>Myo Armband Reader</h1>
+
+<p>Tomas Gogorza</p>
+
+</section>
+<section class='' data-state='' id='slide-2'>
+  <h2>Myo Armband</h2>
+  <p>The Myo Armband (<a href="http://www.myo.com">http://www.myo.com</a>) lets you remotely control technology with gestures and motion.
+It reads information from 4 different types of sensors:</p>
+
+<ul>
+<li>EMG (electromyographic)</li>
+<li>Gyroscope<br></li>
+<li>Accelerometer </li>
+<li>Orientation</li>
+</ul>
+
+</section>
+<section class='' data-state='' id='slide-3'>
+  <h2>Reading the Data</h2>
+  <p>The Reader web app loads sample data captured from the armband and stored into CSV files.
+The data is read from 4 different files (one for each sensor)</p>
+
+<p>This is a sample read from the accelerometer: </p>
+
+<pre><code>##     timestamp         x        y        z
+## 1 1.44329e+15 -0.493652 0.563965 0.700684
+## 2 1.44329e+15 -0.489746 0.561035 0.698242
+## 3 1.44329e+15 -0.488770 0.565430 0.704590
+## 4 1.44329e+15 -0.489746 0.564941 0.703125
+## 5 1.44329e+15 -0.490234 0.575684 0.694336
+## 6 1.44329e+15 -0.494141 0.565918 0.696289
+## 7 1.44329e+15 -0.497070 0.568359 0.688965
+## 8 1.44329e+15 -0.498047 0.565430 0.702148
+</code></pre>
+
+</section>
+<section class='' data-state='' id='slide-4'>
+  <h2>Data Plots</h2>
+  <p>Sensor data is plotted into an easy to visualize format, which lets the user get a better understanding and perform a quick analysis of the sensor data:</p>
+
+<p><img src="assets/fig/unnamed-chunk-2-1.png" alt="plot of chunk unnamed-chunk-2"></p>
+
+</section>
+<section class='' data-state='' id='slide-5'>
+  <h2>MyoReader Web</h2>
+  <p>You can access the shiny app at <a href="http://tgogorza.shinyapps.io/MyoReader">http://tgogorza.shinyapps.io/MyoReader</a></p>
+
+<p><img src="assets/img/MyoReader.jpg" alt="width"></p>
+
+</section>
+    </div>
+  </div>
+</body>
+  <script src="libraries/frameworks/revealjs/lib/js/head.min.js"></script>
+  <script src="libraries/frameworks/revealjs/js/reveal.min.js"></script>
+  <script>
+  // Full list of configuration options available here:
+  // https://github.com/hakimel/reveal.js#configuration
+  Reveal.initialize({
+    controls: true,
+    progress: true,
+    history: true,
+    center: true,
+    theme: Reveal.getQueryHash().theme || 'default', 
+    transition: Reveal.getQueryHash().transition || 'default', 
+    dependencies: [
+    // Cross-browser shim that fully implements classList -
+    // https://github.com/eligrey/classList.js/
+      { src: 'libraries/frameworks/revealjs/lib/js/classList.js', condition: function() { return !document.body.classList;}},
+      // Zoom in and out with Alt+click
+      { src: 'libraries/frameworks/revealjs/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+      // Speaker notes
+      { src: 'libraries/frameworks/revealjs/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+      // Remote control your reveal.js presentation using a touch device
+      //{ src: 'libraries/frameworks/revealjs/plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+      ]
+  });
+  </script>  <!-- LOAD HIGHLIGHTER JS FILES -->
+<script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<!-- DONE LOADING HIGHLIGHTER JS FILES -->
+ 
+
+</html>
