@@ -1,6 +1,7 @@
 setwd("D:/Cursos/Data Science/datasciencecoursera/Capstone")
 source("loadData.R")
 source("cleanData.R")
+source("exploratoryAnalysis.R")
 
 #Read the text files and paste them together
 #Read Blogs file
@@ -38,3 +39,7 @@ tokensnbw <- tokenize(alltext,filter_bad_words = TRUE)
 
 #Create ordered table of word frequencies
 token_table <- sort(table(tokens), decreasing = TRUE)
+bigram_table <- sort(table(bigrams), decreasing = TRUE)
+trigram_table <- sort(table(trigrams), decreasing = TRUE)
+
+

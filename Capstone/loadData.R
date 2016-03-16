@@ -27,8 +27,3 @@ readFile <- function(filename){
 # blogsDF <- textDataFrame(blogssample)
 # newsDF <- textDataFrame(newssample)
 # tweetsDF <- textDataFrame(tweetssample)
-
-#love <- grep("love",tweetsDF$text,value=TRUE)
-#hate <- grep("hate",tweetsDF$text,value=TRUE)
-#bio <- grep("biostats",tweetsDF$text,value=TRUE)
-#computer <- grep("A computer once beat me at chess, but it was no match for me at kickboxing",tweetsDF$text,value=TRUE)

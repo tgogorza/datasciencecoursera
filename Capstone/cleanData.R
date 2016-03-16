@@ -1,4 +1,5 @@
 library(tm)
+library(quanteda)
 
 #tokenizer <- function(x) unlist(strsplit(as.character(x), "[[:space:],\\.!?()=+_&{}:;\"]+")) #faltan agregar cosas (", smilies, hashtags, etc)
 #tokenizer <- function(x) unlist(strsplit(as.character(x), "[[:space:]]+"))
@@ -6,28 +7,39 @@ library(tm)
 
 #Given a corpus, this function removes punctuation, numbers and (oprionally) bad words and
 #returnr a list of tokens
-tokenize <- function(corpus, filter_bad_words = FALSE, convert_to_lower = FALSE)
+tokenize <- function(corpus, remove_symbols = FALSE, filter_bad_words = FALSE, convert_to_lower = FALSE)
 {
-    #Remove numbers and punctuation
-    cleancorpus <- removeNumbers(removePunctuation(corpus,preserve_intra_word_dashes = FALSE))
-    cleancorpus <- sapply(cleancorpus, FUN = function(x) gsub(",.!?()=+\\-_&\\-\\{\\}:;`'''~\"\\\"]+", "",x))
-    #cleancorpus <- sapply(cleancorpus, FUN = function(x) gsub("[^[:alnum:]]", " ",x))
+    if(remove_symbols){
+        corpus <- removeSymbols(corpus)    
+    }
     
     #Filter bad words
     if(filter_bad_words){
-        cleancorpus <- profanityFilter(cleancorpus)
+        corpus <- profanityFilter(corpus)
     }
     
     #Tokenize lines
-    tokens <- sapply(cleancorpus, FUN = function(x) unlist(strsplit(as.character(x), "[[:space:]]+")), USE.NAMES = FALSE)
+    tokens <- sapply(corpus, FUN = function(x) unlist(strsplit(as.character(x), "[[:space:]]+")), USE.NAMES = FALSE)
+    #tokens <- sapply(cleancorpus, FUN = function(x) ngram(as.character(x),1), USE.NAMES = FALSE)
     #Flatten lists to 1 list of tokens
     tokens <- do.call(c, tokens)
+    #Remove empty tokens
+    tokens <- tokens[tokens != ""]
     
     #Convert UPPER to lower case
     if(convert_to_lower)
         tokens <- tolower(tokens)
     
     tokens
+}
+
+#Remove numbers and punctuation
+removeSymbols <- function(corpus)
+{
+    cleancorpus <- removeNumbers(removePunctuation(corpus,preserve_intra_word_dashes = FALSE))
+    cleancorpus <- sapply(cleancorpus, FUN = function(x) gsub(",.!?()=+\\-_&\\-\\{\\}:;`'''~\\\"]+", "",x), USE.NAMES = FALSE)
+    #cleancorpus <- sapply(cleancorpus, FUN = function(x) gsub("[^[:alnum:]]", " ",x))
+    cleancorpus
 }
 
 #Loads a text file and returns a list of tokens
@@ -46,6 +58,18 @@ profanityFilter <- function(corpus)
     cleancorpus <- removeWords(corpus,badwords)
     cleancorpus
 }
+
+
+# ngramss <- function(corpus, n)
+# {
+#     ngramss <- sapply(corpus, FUN = function(x) get.ngrams(ngram(as.character(x),n)), USE.NAMES = FALSE)
+#     unlist(ngramss)
+# }
+
+# find_ngrams <- function(x, n) {
+#     if (n == 1) return(x)
+#     c(x, apply(embed(x, n), 1, function(row) paste(rev(row), collapse=' ')))
+# }
 
 ##Tokenize inputs
 #tkblogs <- sapply(blogssample, FUN = tokenizer, USE.NAMES = FALSE)
