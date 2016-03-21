@@ -1,22 +1,205 @@
 ---
-title: "Milestone Report"
+title: 'Capstone Project: Milestone Report'
 author: "Tomas Gogorza"
-date: "15 de marzo de 2016"
-output: pdf_document
+date: "March 20th, 2016"
+output: html_document
 ---
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r}
-summary(cars)
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+#Load libraries and helper functions
+library(dplyr)
+library(data.table)
+library(knitr)
+library(ggplot2)
+library(tidyr)
+source("loadData.R")
+source("cleanData.R")
 ```
 
-You can also embed plots, for example:
+##Summary
 
-```{r, echo=FALSE}
-plot(cars)
+The goal of this project is to analyze a large corpus of text documents and discover the structure in the data and how words are put together. This milestone report covers the steps of loading, cleaning and analyzing text data, in the process of getting ready to build a predictive text model. 
+
+##Corpus Load and Cleanup
+
+The first step to the creation of our predictive model is to understand the data being used to train our model. In this case the dataset is composed of 3 collections of text pieces, containing blog entries, news and tweets. To create the corpus, we'll be loading 3 files:
+
+    + en_US.blogs.txt     (200mb)
+    + en_US.news.txt      (196mb)
+    + en_US.twitter.txt   (159mb)
+    
+In order to compose the corpus we need to load the text collections and explore some basic features of the data. Due to the size of the data set and processing and memory constraints, a sample of 10% of each file will be used to create the corpus for this report. After loading the text files, let's take a look of the first lines of each of them:
+
+```{r load_data, echo=FALSE, warning=FALSE, message=FALSE}
+
+#Load the data from txt files
+blogs <- fread('Data/en_US.blogs.txt', sep = "\n",header = FALSE, encoding = "UTF-8",
+               verbose = FALSE, showProgress = FALSE)$V1
+news <- fread('Data/en_US.news.txt', sep = "\n",header = FALSE, encoding = "UTF-8", 
+              verbose = FALSE, showProgress = FALSE)$V1
+tweets <- readFile('Data/en_US.twitter.txt')
+
+#Take random samples representing 30% of each dataset 
+sample <- rbinom(length(blogs),1,0.1)
+blogs <- blogs[sample == 1]
+sample <- rbinom(length(news),1,0.1)
+news <- news[sample == 1]
+sample <- rbinom(length(tweets),1,0.1)
+tweets <- tweets[sample == 1]
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+First 5 blog entries:
+```{r blogs, echo=FALSE}
+
+head(blogs,5)
+```
+
+First 5 news:
+```{r news, echo=FALSE}
+head(news,5)
+```
+
+First 5 tweets:
+```{r tweets, echo=FALSE}
+head(tweets,5)
+```
+
+Now in order to perform some deeper analysis of the corpus, we need to clean up the text, extract unwanted symbols and characters and split the text into tokens. After splitting the corpus, we get the following information:
+
+```{r tokens, echo=FALSE}
+
+#Count number of lines on each collection and totals
+bloglines <- length(blogs)
+newslines <- length(news)
+tweetslines <- length(tweets)
+totallines <- bloglines + newslines + tweetslines
+
+# Split collections into sets of words, remove symbols and convert to lower case
+blogtokens <- tokenize(blogs, remove_symbols = TRUE, 
+                       convert_to_lower = TRUE, filter_bad_words = FALSE)
+newstokens <- tokenize(news, remove_symbols = TRUE, 
+                       convert_to_lower = TRUE, filter_bad_words = FALSE)
+tweetstokens <- tokenize(tweets, remove_symbols = TRUE, 
+                         convert_to_lower = TRUE, filter_bad_words = FALSE)
+#Group all tokens together
+tokens <- c(blogtokens,newstokens,tweetstokens)
+```
+
+
+Source  |   Lines           |   Words
+--------|-------------------|--------
+Blogs   | `r bloglines`     |   `r length(blogtokens)`
+News    | `r newslines`     |   `r length(newstokens)`
+Tweets  | `r tweetslines`   |   `r length(tweetstokens)`
+Total   | `r totallines`    |   `r length(tokens)`
+
+The above table gives a general sense of the size of the corpus and number of words in each type of data set, as well as in total.
+
+##Exploratory Data Analysis
+
+With the complete list of tokens created, let's proceed to exploring the corpus and get a wider understanding of word relationships.
+First we need to create a few n-gram collections and explore word frequencies, so we'll create a collection of bigrams and a collection of trigrams (groups of 2 and 3 contiguous words respectively).
+
+```{r ngrams, echo=FALSE}
+
+#Create sets of 2-grams and 3-grams
+bigrams <- ngrams(tokens,2)
+trigrams <- ngrams(tokens,3)
+
+#Count total number of tokens
+totaltokens <- length(tokens)
+totalbigrams <- length(bigrams)
+totaltrigrams <- length(trigrams)
+```
+
+Now we can obtain repetition frequencies for tokens, bigrams and trigrams, and we can see how frequently they show up in the corpus.
+
+```{r analysis, echo=FALSE}
+
+#Create ordered tables of word counts
+token_table <- sort(table(tokens), decreasing = TRUE)
+bigram_table <- sort(table(bigrams), decreasing = TRUE)
+trigram_table <- sort(table(trigrams), decreasing = TRUE)
+```
+
+Tokens:
+```{r tokenDF, echo=FALSE}
+
+#Create data frame with tokens frequencies and word length
+tokenDF <- data.frame(token = names(token_table), count = as.vector(token_table))
+tokenDF$token <- as.vector(tokenDF$token)
+tokenDF <- mutate(tokenDF, freq = round((count/totaltokens)*100,2), length = nchar(token))
+tokenDF[1:10,]
+```
+
+Bigrams:
+```{r bigramDF, echo=FALSE}
+
+#Create Bigram data frame with frqeuencies and repetition counts
+bigramDF <- data.frame(gram = names(bigram_table), count = as.vector(bigram_table))
+bigramDF$gram <- as.vector(bigramDF$gram)
+bigramDF <- separate(bigramDF,gram,c("word1","word2"),"_",remove = FALSE)
+bigramDF <- mutate(bigramDF, freq = round((count/totalbigrams)*100,2) )
+bigramDF[1:10,]
+```
+
+Trigrams:
+```{r trigramDF, echo=FALSE}
+
+#Create Trigram data frame with frqeuencies and repetition counts
+trigramDF <- data.frame(gram = names(trigram_table), count = as.vector(trigram_table))
+trigramDF$gram <- as.vector(trigramDF$gram)
+trigramDF <- separate(trigramDF,gram,c("word1","word2","word3"),"_",remove = FALSE)
+trigramDF <- mutate(trigramDF, freq = round((count/totaltrigrams)*100,2))
+trigramDF[1:10,]
+```
+
+Now a few plots will give us a better sense of the words distribution
+
+```{r figure1, echo=FALSE}
+
+#Plot word frequencies
+ggplot(tokenDF[1:30,], aes(token,freq)) + 
+    geom_bar( stat="identity", position="dodge") + 
+    scale_x_discrete(limits=tokenDF$token[1:30]) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    labs(title="Figure 1. Token Frequencies",x="Token",y="Frequency (%)")
+```
+
+Figure 1. Word frequencies for the 30 most common tokens in the corpus.
+
+```{r figure2, echo=FALSE}
+
+#Plot bigram frequencies
+ggplot(bigramDF[1:30,], aes(gram,freq)) + 
+    geom_bar( stat="identity", position="dodge") + 
+    scale_x_discrete(limits=bigramDF$gram[1:30]) + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    labs(title="Figure 2. 2-Gram Frequencies",x="Bigram",y="Frequency (%)")
+```
+
+Figure 2. Word frequencies for the 30 most frequent bi-grams in the corpus.
+
+```{r figure3, echo=FALSE}
+
+#Plot trigram frequencies
+ggplot(trigramDF[1:30,], aes(gram,freq)) + 
+    geom_bar( stat="identity", position="dodge") + 
+    scale_x_discrete(limits=trigramDF$gram[1:30]) + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+    labs(title="Figure 3. 3-Gram Frequencies",x="Trigram",y="Frequency (%)")
+```
+
+Figure 3. Word frequencies for the 30 most frequent trigrams in the corpus.
+
+After some initial data analysis, we can see the most frequently typed words are usually short words, and mainly articles, connectors, and prepositions.  
+
+##Predictive Model
+
+The main idea for the predictive model is to use the collection of bigrams and trigrams (and possibly higher order n-grams) to create a Markov Chain which will allow to give next-word probabilities as words are input and a sentence starts to form.
+
+\newpage
+
+## Appendix: The Code
+```{r appendix, echo=TRUE, eval=FALSE, ref.label=all_labels()}
+```

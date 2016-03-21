@@ -7,7 +7,7 @@ library(quanteda)
 
 #Given a corpus, this function removes punctuation, numbers and (oprionally) bad words and
 #returnr a list of tokens
-tokenize <- function(corpus, remove_symbols = FALSE, filter_bad_words = FALSE, convert_to_lower = FALSE)
+tokenize <- function(corpus, remove_symbols = TRUE, filter_bad_words = FALSE, convert_to_lower = FALSE)
 {
     if(remove_symbols){
         corpus <- removeSymbols(corpus)    
@@ -36,9 +36,14 @@ tokenize <- function(corpus, remove_symbols = FALSE, filter_bad_words = FALSE, c
 #Remove numbers and punctuation
 removeSymbols <- function(corpus)
 {
-    cleancorpus <- removeNumbers(removePunctuation(corpus,preserve_intra_word_dashes = FALSE))
-    cleancorpus <- sapply(cleancorpus, FUN = function(x) gsub(",.!?()=+\\-_&\\-\\{\\}:;`'''~\\\"]+", "",x), USE.NAMES = FALSE)
-    #cleancorpus <- sapply(cleancorpus, FUN = function(x) gsub("[^[:alnum:]]", " ",x))
+    cleancorpus <- sapply(corpus, FUN = function(x) gsub("[^[:alnum:] | ']", "", x), USE.NAMES = FALSE)
+    
+    #cleancorpus <- removeNumbers(removePunctuation(corpus,preserve_intra_word_dashes = FALSE))
+    
+    #cleancorpus <- sapply(cleancorpus, FUN = function(x) gsub(",.!?()=+\\-_&\\-\\{\\}:;`''~\\\"]+", "",x), USE.NAMES = FALSE)
+    
+    #cleancorpus <- sapply(cleancorpus, FUN = function(x) gsub("[[:punct:]]", "",x), USE.NAMES = FALSE)
+    cleancorpus <- cleancorpus[cleancorpus != ""]
     cleancorpus
 }
 
@@ -58,24 +63,3 @@ profanityFilter <- function(corpus)
     cleancorpus <- removeWords(corpus,badwords)
     cleancorpus
 }
-
-
-# ngramss <- function(corpus, n)
-# {
-#     ngramss <- sapply(corpus, FUN = function(x) get.ngrams(ngram(as.character(x),n)), USE.NAMES = FALSE)
-#     unlist(ngramss)
-# }
-
-# find_ngrams <- function(x, n) {
-#     if (n == 1) return(x)
-#     c(x, apply(embed(x, n), 1, function(row) paste(rev(row), collapse=' ')))
-# }
-
-##Tokenize inputs
-#tkblogs <- sapply(blogssample, FUN = tokenizer, USE.NAMES = FALSE)
-#tknews <- sapply(newssample, FUN = tokenizer, USE.NAMES = FALSE)
-#tktweets <- sapply(tweetssample, FUN = tokenizer, USE.NAMES = FALSE)
-
-
-
-

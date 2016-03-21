@@ -6,10 +6,13 @@ source("exploratoryAnalysis.R")
 #Read the text files and paste them together
 #Read Blogs file
 blogs <- readFile('Data/en_US.blogs.txt')
+blogs2 <- readFile2('Data/en_US.blogs.txt')$V1
 #Read News file
 news <- readFile('Data/en_US.news.txt')
+news2 <- readFile2('Data/en_US.news.txt')$V1
 #Read Tweets file
 tweets <- readFile('Data/en_US.twitter.txt')
+tweets2 <- readFile2('Data/en_US.twitter.txt')
 #alltext <- c(blogs,news,tweets)
 #Sample files (30%)
 sample <- rbinom(length(blogs),1,0.1)

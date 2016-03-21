@@ -1,7 +1,8 @@
 library(LaF)
 library(dplyr)
+library(data.table)
 
-textDataFrame <- function(textvector)   data.frame(text = textvector, charcount = sapply(textvector, function(l)  nchar(l), USE.NAMES = FALSE ))
+#textDataFrame <- function(textvector)   data.frame(text = textvector, charcount = sapply(textvector, function(l)  nchar(l), USE.NAMES = FALSE ))
 
 #   Reads a text file line by line and returns a vector of text lines
 #   filename -> path to the text file
@@ -13,17 +14,7 @@ readFile <- function(filename){
     texts
 }
 
-# #Sample files
-# lenBlogs <- 899288
-# lenNews <- 77259
-# lenTweets <- 2360148
-# blogs <- readSample('Data/en_US.blogs.txt',0.3,lenBlogs)
-# news <- readSample('Data/en_US.news.txt',0.3,lenNews)
-# tweets <- readSample('Data/en_US.twitter.txt',0.3,lenTweets)
-
-
-
-# #Create Data Frames with (Text, Character count, Source)
-# blogsDF <- textDataFrame(blogssample)
-# newsDF <- textDataFrame(newssample)
-# tweetsDF <- textDataFrame(tweetssample)
+readFile2 <- function(filename){
+    texts <- fread(filename,sep = "\n",header = FALSE, encoding = "UTF-8")
+    texts
+}
