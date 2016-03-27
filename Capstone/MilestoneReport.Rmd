@@ -46,6 +46,7 @@ sample <- rbinom(length(news),1,0.1)
 news <- news[sample == 1]
 sample <- rbinom(length(tweets),1,0.1)
 tweets <- tweets[sample == 1]
+alltext = toLower(c(blogs,news,tweets))
 ```
 
 First 5 blog entries:
@@ -75,11 +76,11 @@ tweetslines <- length(tweets)
 totallines <- bloglines + newslines + tweetslines
 
 # Split collections into sets of words, remove symbols and convert to lower case
-blogtokens <- tokenize(blogs, remove_symbols = TRUE, 
+blogtokens <- tokenizer(blogs, remove_symbols = TRUE, 
                        convert_to_lower = TRUE, filter_bad_words = FALSE)
-newstokens <- tokenize(news, remove_symbols = TRUE, 
+newstokens <- tokenizer(news, remove_symbols = TRUE, 
                        convert_to_lower = TRUE, filter_bad_words = FALSE)
-tweetstokens <- tokenize(tweets, remove_symbols = TRUE, 
+tweetstokens <- tokenizer(tweets, remove_symbols = TRUE, 
                          convert_to_lower = TRUE, filter_bad_words = FALSE)
 #Group all tokens together
 tokens <- c(blogtokens,newstokens,tweetstokens)
@@ -103,8 +104,14 @@ First we need to create a few n-gram collections and explore word frequencies, s
 ```{r ngrams, echo=FALSE}
 
 #Create sets of 2-grams and 3-grams
-bigrams <- ngrams(tokens,2)
-trigrams <- ngrams(tokens,3)
+#bigrams <- as.character(ngrams(tokens,2))
+bigrams <- tokenize(alltext,what = "word", removeNumbers = TRUE, removePunct = TRUE, 
+                       removeSeparators = TRUE, removeTwitter = TRUE, removeHyphens = FALSE,
+                       ngrams = 2)[[1]]
+#trigrams <- as.character(ngrams(tokens,3))
+trigrams <- tokenize(alltext,what = "word", removeNumbers = TRUE, removePunct = TRUE, 
+                       removeSeparators = TRUE, removeTwitter = TRUE, removeHyphens = FALSE,
+                       ngrams = 3)[[1]]
 
 #Count total number of tokens
 totaltokens <- length(tokens)

@@ -46,3 +46,27 @@ bigram_table <- sort(table(bigrams), decreasing = TRUE)
 trigram_table <- sort(table(trigrams), decreasing = TRUE)
 
 
+blogtxt <- textfile('Data/en_US.blogs.txt')
+blogcorpus <- corpus(blogtxt)
+blogcorpus <- sample(blogcorpus,45000)
+newstxt <- textfile('Data/en_US.news.txt')
+newscorpus <- corpus(newstxt)
+newscorpus <- sample(newscorpus,50000)
+twittertxt <- textfile('Data/en_US.twitter.txt')
+twittercorpus <- corpus(twittertxt)
+twittercorpus <- sample(twittercorpus,110000)
+corpus <- blogcorpus + newscorpus + twittercorpus
+
+newstokens <- tokenize(newscorpus, what = "word", removeNumbers = TRUE, removePunct = TRUE, 
+                       removeSeparators = TRUE, removeTwitter = TRUE, removeHyphens = FALSE,
+                       ngrams = 1)[[1]]
+  
+  
+mydfm <- dfm(corpus,toLower=TRUE,removeTwitter = TRUE,removeSeparators = TRUE,removePunct = TRUE,removeNumbers = TRUE)
+topfeatures(mydfm,30)
+freqs <- tf(mydfm,scheme="log")
+
+
+blogdfm <- dfm(blogcorpus,toLower=TRUE,removeTwitter = TRUE,removeSeparators = TRUE,removePunct = TRUE,removeNumbers = TRUE)
+require(RColorBrewer)
+plot(blogdfm, max.words = 100, colors = brewer.pal(6, "Dark2"), scale = c(8, .5))

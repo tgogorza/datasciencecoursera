@@ -1,5 +1,5 @@
 library(tm)
-library(quanteda)
+#library(quanteda)
 
 #tokenizer <- function(x) unlist(strsplit(as.character(x), "[[:space:],\\.!?()=+_&{}:;\"]+")) #faltan agregar cosas (", smilies, hashtags, etc)
 #tokenizer <- function(x) unlist(strsplit(as.character(x), "[[:space:]]+"))
@@ -7,7 +7,7 @@ library(quanteda)
 
 #Given a corpus, this function removes punctuation, numbers and (oprionally) bad words and
 #returnr a list of tokens
-tokenize <- function(corpus, remove_symbols = TRUE, filter_bad_words = FALSE, convert_to_lower = FALSE)
+tokenizer <- function(corpus, remove_symbols = TRUE, filter_bad_words = FALSE, convert_to_lower = FALSE)
 {
     if(remove_symbols){
         corpus <- removeSymbols(corpus)    
