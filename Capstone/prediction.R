@@ -29,12 +29,12 @@ preprocess <- function(phrase, grams){
     tokens
 }
 
-runPrediction <- function(phrase,models){
+runPrediction <- function(phrase){
     
     #Try fourgram model first
-    pred4 <- predictWord(phrase,models$fourgrams)
-    pred3 <- predictWord(phrase,models$trigrams)
-    pred2 <- predictWord(phrase,models$bigrams)
+    pred4 <- predictWord(phrase,fourgrams)
+    pred3 <- predictWord(phrase,trigrams)
+    pred2 <- predictWord(phrase,bigrams)
     #Combine 3 models and get best 3 probabilities
     #Filter out repeated words
     pred <- pred4

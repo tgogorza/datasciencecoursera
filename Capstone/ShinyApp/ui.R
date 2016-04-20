@@ -2,21 +2,22 @@ library(shiny)
 shinyUI
 (
     fluidPage(
-        titlePanel("Myo Armband Reader"),        
-        pageWithSidebar
+        titlePanel("Word Predictor"),        
+        fluidPage
         (
-            headerPanel
+            fluidRow
             (
-                h5("This page loads sample data read from a Myo Armband and lets the user select a sensor type to read the captured data in the form of scatter plots and a smoother line")
-            ),
-            sidebarPanel
-            (
-                #radioButtons("selection","Sensors",c("Rotation","EMG","Accelerometer","Gyro"),"Rotation")
-                textInput("text", "Enter text", "a"),
-                submitButton("button")
+                h5("Behold the mind reading next word predictor! Enter a phrase and let the magic begin!")
             ),
             mainPanel
             (
+                textInput("text", "Enter a phrase", "",width = "100%"),
+                fluidRow(
+                    column(width=1, offset=1, uiOutput("word1")),
+                    column(width=1, offset=1, uiOutput("word2")),
+                    column(width=1, offset=1, uiOutput("word3"))
+                        ),
+                br(),
                 tableOutput("predictedWords")
             )
         )
