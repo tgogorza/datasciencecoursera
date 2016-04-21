@@ -22,14 +22,7 @@ sample <- rbinom(length(tweets),1,0.1)
 tweets <- tweets[sample == 1]
 alltext = toLower(c(blogs,news,tweets))
 
-# mydfm <- dfm(alltext, verbose = TRUE, toLower = TRUE,
-#              removeNumbers = TRUE, removePunct = TRUE, removeSeparators = TRUE,
-#              removeTwitter = FALSE, stem = FALSE, language = "english")
-# 
-# tokens2 <- features(alltext)
-
-#alltextcorpus <- corpus(alltext)
-tokens <- tokenize(alltext,what = "word", removeNumbers = TRUE, removePunct = TRUE,
+tokens <- tokenize(alltext, what = "word", removeNumbers = TRUE, removePunct = TRUE,
                     removeSeparators = TRUE, removeTwitter = TRUE, removeHyphens = FALSE)
 #Remove stop-words
 #tokens <- removeFeatures(tokens,stopwords("english"))

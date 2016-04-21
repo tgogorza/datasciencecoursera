@@ -1,5 +1,6 @@
 require(quanteda)
 require(stringr)
+require(dplyr)
 
 predictWord <- function(phrase,model){
         
@@ -14,7 +15,7 @@ predictWord <- function(phrase,model){
         
         #Extract predicted words into a new column
         phrases$nextWord <- sapply(phrases$gram, function(x) tail(str_split(x,"_")[[1]],1) )
-        phrases[1:3,]    
+        phrases    
     }
     
 }
