@@ -43,10 +43,17 @@ body <- dashboardBody(
                 h2("Options"),
                 useShinyjs(),
                 checkboxInput("checkCloud", "Show predicted words cloud", TRUE),
-                checkboxInput("checkTable", "Show predicted words table", TRUE)
+                checkboxInput("checkTable", "Show predicted words table", FALSE)
         ),
         tabItem(tabName = "information",
-                h2("Some info")
+                h2("How to use..."),
+                h5("Simply start typing in the text input area and the application will return a list of suggestions for the next word."),
+                h2("Top suggestions..."),
+                h5("The 3 most likely words will be shown as buttons below the text area. You can click on those to automatically add them to your text."),
+                h2("Word cloud..."),
+                h5("You can also use the word cloud to check for word suggestions. The cloud will show the best suggestions varying sizes according to likelyhood."),
+                h2("Word table..."),
+                h5("You will also find a table with predicted words and more information internally used by the application for predicting words.")
         )
     )
 )
