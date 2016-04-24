@@ -2,8 +2,8 @@ name: WordPredictor
 account: tgogorza
 server: shinyapps.io
 appId: 95976
-bundleId: 430157
+bundleId: 432339
 url: https://tgogorza.shinyapps.io/WordPredictor/
-when: 1461367185.42548
+when: 1461526699.81419
 asMultiple: FALSE
 asStatic: FALSE

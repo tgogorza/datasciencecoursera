@@ -1,11 +1,6 @@
 library(shiny)
 library(wordcloud)
 library(stringr)
-source("prediction.R")
-
-load("bigramDF.RData")
-load("trigramDF.RData")
-load("fourgramDF.RData")
 
 shinyServer
 (
@@ -24,7 +19,7 @@ shinyServer
                 output$predictedWords <- renderDataTable({pred})    
                 
                 output$wordCloud <- renderPlot({
-                    wordcloud(pred$nextWord, pred$mle, scale=c(6,1), random.order=FALSE, use.r.layout = FALSE, rot.per = 0.35,
+                    wordcloud(pred$nextWord, pred$mle, scale=c(6,3), random.order=FALSE, use.r.layout = FALSE, rot.per = 0.35,
                                   colors=brewer.pal(8, "Dark2"), random.color = TRUE, max.words = dim(pred)[1])
                 })
             }

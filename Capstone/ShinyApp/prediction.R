@@ -2,6 +2,10 @@ require(quanteda)
 require(stringr)
 require(dplyr)
 
+#' Predicts next word given a phrase and a language model
+#' @param phrase string containing a phrase
+#' @param model language model
+#' @return data frame with possible next words and likelyhood estimations
 predictWord <- function(phrase,model){
         
     #Determine ngrams from the model given as parameter
@@ -20,20 +24,24 @@ predictWord <- function(phrase,model){
     
 }
 
+#' Pre processes phrase before running the prediction
+#' @param phrase string
+#' @grams grams integer determined by the language model (2 for bigrams, 3 for trigrams, etc)
+#' @return collection of phrase tokens
 preprocess <- function(phrase, grams){
     
     #Preprocess input phrase
     tokens <- tokenize(phrase,what = "word", removeNumbers = TRUE, removePunct = TRUE,
                        removeSeparators = TRUE, removeTwitter = TRUE, removeHyphens = FALSE)[[1]]
-    #tokens <- removeFeatures(tokens,stopwords("english"))[[1]]
-    
+    #Extracts last phrase words for running the prediction
     elements <- grams - 2
     tokens <- tokens[(length(tokens) - elements):length(tokens)]
-
     tokens <- paste(tokens, collapse = "_")
     tokens
 }
 
+#' Given a phrase, runs the prediction algorithm and returns a list of possible next words
+#' @param phrase
 runPrediction <- function(phrase){
     
     #Try fourgram model first
@@ -68,10 +76,10 @@ runPrediction <- function(phrase){
         pred <- arrange(pred,desc(mle))
         #Filter out invalid results
         pred <- filter(pred, !is.na(mle))
-        #If all predictions are NA, use unknown words prediction
-        if(all(is.na(pred$mle))){
-            
-        }
+#         #If all predictions are NA, use unknown words prediction
+#         if(all(is.na(pred$mle))){
+#             
+#         }
     }
     
     pred
