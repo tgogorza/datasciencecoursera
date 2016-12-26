@@ -1,5 +1,7 @@
-#Capstone Project
+#NextWord
 ##Text Predictor
+https://tgogorza.shinyapps.io/WordPredictor/
+
 This is the final project of the Coursera.org Data Science specialization.
 The goal of the project is to create a text predictor, which will take an incomplete phrase as an input and will a list of suggestions for the next word.
 
